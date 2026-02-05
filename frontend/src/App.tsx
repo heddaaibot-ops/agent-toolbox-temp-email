@@ -73,7 +73,7 @@ function App() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-white p-3 rounded-xl shadow-lg">
-              <Mail className="text-primary-600" size={32} />
+              <Mail className="text-sky-600" size={32} />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white flex items-center gap-2">
@@ -97,8 +97,8 @@ function App() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto">
         {!connectedAddress ? (
-          <div className="card max-w-2xl mx-auto text-center py-12">
-            <Mail className="mx-auto text-primary-600 mb-6" size={64} />
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto text-center py-12">
+            <Mail className="mx-auto text-sky-600 mb-6" size={64} />
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Welcome to Agent's Toolbox
             </h2>
@@ -109,7 +109,7 @@ function App() {
             </p>
             <div className="space-y-4 text-left max-w-md mx-auto">
               <div className="flex items-start gap-3">
-                <div className="bg-primary-100 text-primary-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
                   1
                 </div>
                 <div>
@@ -120,7 +120,7 @@ function App() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-primary-100 text-primary-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
                   2
                 </div>
                 <div>
@@ -131,7 +131,7 @@ function App() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-primary-100 text-primary-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
                   3
                 </div>
                 <div>
@@ -147,17 +147,17 @@ function App() {
           <>
             {/* My Mailboxes */}
             {myMailboxes.length > 0 && view === 'purchase' && (
-              <div className="card mb-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">My Mailboxes</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {myMailboxes.map((mailboxId) => (
                     <button
                       key={mailboxId}
                       onClick={() => handleViewMailbox(mailboxId)}
-                      className="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all"
+                      className="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-sky-500 hover:bg-sky-50 transition-all"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Mail size={16} className="text-primary-600" />
+                        <Mail size={16} className="text-sky-600" />
                         <span className="font-semibold text-gray-900">Mailbox</span>
                       </div>
                       <div className="text-xs text-gray-600 font-mono truncate">

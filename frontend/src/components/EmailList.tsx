@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Mail, Inbox, Clock } from 'lucide-react';
-import { EmailMessage } from '../types';
+import type { EmailMessage } from '../types';
 
 interface EmailListProps {
   messages: EmailMessage[];
@@ -43,7 +43,7 @@ export function EmailList({ messages }: EmailListProps) {
           onClick={() => setSelectedMessage(message)}
           className={`p-4 border rounded-lg cursor-pointer transition-all ${
             selectedMessage?.id === message.id
-              ? 'border-primary-500 bg-primary-50'
+              ? 'border-sky-500 bg-sky-50'
               : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
           }`}
         >

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Mail, Copy, RefreshCw, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { apiService } from '../services/api';
-import { Mailbox, EmailMessage } from '../types';
+import type { Mailbox, EmailMessage } from '../types';
 import { EmailList } from './EmailList';
 
 interface MailboxDashboardProps {
@@ -90,9 +90,9 @@ export function MailboxDashboard({ mailboxId, onBack }: MailboxDashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="card max-w-4xl mx-auto">
+      <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <RefreshCw className="animate-spin text-primary-600" size={32} />
+          <RefreshCw className="animate-spin text-sky-600" size={32} />
           <span className="ml-3 text-gray-600">Loading mailbox...</span>
         </div>
       </div>
@@ -101,12 +101,12 @@ export function MailboxDashboard({ mailboxId, onBack }: MailboxDashboardProps) {
 
   if (error || !mailbox) {
     return (
-      <div className="card max-w-4xl mx-auto">
+      <div className="bg-white rounded-xl shadow-lg p-6 max-w-4xl mx-auto">
         <div className="text-center py-12">
           <XCircle className="mx-auto text-red-500 mb-4" size={48} />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Error</h3>
           <p className="text-gray-600 mb-6">{error || 'Mailbox not found'}</p>
-          <button onClick={onBack} className="btn-secondary">
+          <button onClick={onBack} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
             Go Back
           </button>
         </div>
@@ -117,18 +117,18 @@ export function MailboxDashboard({ mailboxId, onBack }: MailboxDashboardProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Mailbox Info Card */}
-      <div className="card">
+      <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="bg-primary-100 p-3 rounded-lg">
-              <Mail className="text-primary-600" size={24} />
+            <div className="bg-sky-100 p-3 rounded-lg">
+              <Mail className="text-sky-600" size={24} />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Your Mailbox</h2>
               <p className="text-gray-600">ID: {mailboxId}</p>
             </div>
           </div>
-          <button onClick={onBack} className="btn-secondary">
+          <button onClick={onBack} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
             ← Back
           </button>
         </div>
@@ -144,11 +144,11 @@ export function MailboxDashboard({ mailboxId, onBack }: MailboxDashboardProps) {
                 type="text"
                 value={mailbox.email}
                 readOnly
-                className="input flex-1 font-mono text-sm"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent flex-1 font-mono text-sm"
               />
               <button
                 onClick={() => copyToClipboard(mailbox.email)}
-                className="btn-secondary p-2"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200 p-2"
                 title="Copy to clipboard"
               >
                 {copied ? <CheckCircle size={20} /> : <Copy size={20} />}
@@ -198,13 +198,13 @@ export function MailboxDashboard({ mailboxId, onBack }: MailboxDashboardProps) {
       </div>
 
       {/* Messages Section */}
-      <div className="card">
+      <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-gray-900">Messages</h3>
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="btn-secondary flex items-center gap-2 disabled:opacity-50"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2 disabled:opacity-50"
           >
             <RefreshCw className={isSyncing ? 'animate-spin' : ''} size={16} />
             {isSyncing ? 'Syncing...' : 'Sync'}

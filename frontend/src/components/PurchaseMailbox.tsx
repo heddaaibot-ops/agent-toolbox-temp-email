@@ -44,10 +44,10 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
   };
 
   return (
-    <div className="card max-w-md mx-auto">
+    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <div className="bg-primary-100 p-3 rounded-lg">
-          <Mail className="text-primary-600" size={24} />
+        <div className="bg-sky-100 p-3 rounded-lg">
+          <Mail className="text-sky-600" size={24} />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Purchase Mailbox</h2>
@@ -72,7 +72,7 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
           />
           <div className="flex justify-between text-sm text-gray-600 mt-2">
             <span>1 hour</span>
-            <span className="font-semibold text-primary-600">{duration} hours</span>
+            <span className="font-semibold text-sky-600">{duration} hours</span>
             <span>24 hours</span>
           </div>
         </div>
@@ -88,7 +88,7 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
               onClick={() => setPaymentToken('MON')}
               className={`p-4 rounded-lg border-2 transition-all ${
                 paymentToken === 'MON'
-                  ? 'border-primary-600 bg-primary-50'
+                  ? 'border-sky-600 bg-sky-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -99,7 +99,7 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
               onClick={() => setPaymentToken('USDC')}
               className={`p-4 rounded-lg border-2 transition-all ${
                 paymentToken === 'USDC'
-                  ? 'border-primary-600 bg-primary-50'
+                  ? 'border-sky-600 bg-sky-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >

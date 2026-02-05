@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { BACKEND_URL } from '../config/constants';
-import { Mailbox, EmailMessage, MailboxStatus } from '../types';
+import type { Mailbox, EmailMessage, MailboxStatus } from '../types';
 
 const api = axios.create({
   baseURL: BACKEND_URL,
