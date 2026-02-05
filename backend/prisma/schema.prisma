@@ -1,0 +1,63 @@
+// Prisma Schema for Agent's Toolbox - Email Service
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Mailbox {
+  id            String   @id @default(uuid())
+  mailboxId     String   @unique
+  email         String   @unique
+  password      String
+  buyer         String
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+  duration      Int
+  paymentMethod String
+  active        Boolean  @default(true)
+  messages      Message[]
+
+  @@index([mailboxId])
+  @@index([buyer])
+  @@index([email])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  mailboxId   String
+  messageId   String   @unique
+  from        String
+  to          String
+  subject     String
+  intro       String?
+  hasAttachments Boolean @default(false)
+  size        Int?
+  seen        Boolean  @default(false)
+  receivedAt  DateTime @default(now())
+  mailbox     Mailbox  @relation(fields: [mailboxId], references: [mailboxId], onDelete: Cascade)
+
+  @@index([mailboxId])
+  @@index([receivedAt])
+}
+
+model BlockchainEvent {
+  id            String   @id @default(uuid())
+  eventType     String
+  transactionHash String  @unique
+  blockNumber   Int
+  mailboxId     String?
+  buyer         String?
+  expiresAt     DateTime?
+  paymentMethod String?
+  processed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([transactionHash])
+  @@index([processed])
+  @@index([createdAt])
+}

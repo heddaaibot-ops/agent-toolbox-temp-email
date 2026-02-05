@@ -1,0 +1,17 @@
+{
+  "emailService": "0x7780BB8204140CDA39Dde230fe96b23144e8D3f2",
+  "usdc": "0x3b3a9b160d7F82f76ECa299efeb814094f011b10",
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "deployer": "0x668EffA43cdBa825f24d72b95016cFe8bC495ded",
+  "deployedAt": "2026-02-05",
+  "prices": {
+    "usdcPerHour": "1000",
+    "usdcPerHourReadable": "0.001 USDC",
+    "monPerHour": "1000000000000000",
+    "monPerHourReadable": "0.001 MON"
+  },
+  "verified": true,
+  "status": "deployed-and-tested"
+}

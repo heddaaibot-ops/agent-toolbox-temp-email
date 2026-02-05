@@ -1,0 +1,10 @@
+{
+  "abi": [
+    "function purchaseMailbox(uint256 duration, address paymentToken) external payable returns (string memory mailboxId)",
+    "function getMailbox(string mailboxId) external view returns (address buyer, string memory email, uint256 expiresAt, uint256 duration, address paymentToken, bool active)",
+    "function isMailboxActive(string mailboxId) external view returns (bool)",
+    "function getMailboxPrice(uint256 duration) public pure returns (uint256)",
+    "function getBuyerMailboxes(address buyer) external view returns (string[] memory)",
+    "event EmailPurchased(address indexed buyer, string mailboxId, string email, uint256 expiresAt, string paymentMethod)"
+  ]
+}
