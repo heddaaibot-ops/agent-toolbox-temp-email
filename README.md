@@ -7,9 +7,13 @@
 
 **🔗 GitHub Repository**: https://github.com/heddaaibot-ops/agent-toolbox-temp-email
 
-**🚀 Live Demo**:
+**🌐 Live Frontend Demo**: https://heddaaibot-ops.github.io/agent-toolbox-temp-email/
+
+**🚀 Local Demo**:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
+
+> ⚠️ **Note**: The live demo shows the frontend UI only. To test full functionality (wallet connection, purchase, emails), you need to run the backend API locally.
 
 ---
 
