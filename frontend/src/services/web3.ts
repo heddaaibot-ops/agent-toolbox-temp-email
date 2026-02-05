@@ -144,6 +144,47 @@ export class Web3Service {
     };
   }
 
+  async getReferralRewards(): Promise<string> {
+    if (!this.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    const contract = new Contract(CONTRACT_ADDRESS!, EmailServiceABI.abi, this.signer);
+    const address = await this.signer.getAddress();
+    const rewards = await contract.referralRewards(address);
+
+    return formatUnits(rewards, 18); // MON has 18 decimals
+  }
+
+  async claimReferralReward(): Promise<void> {
+    if (!this.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    const contract = new Contract(CONTRACT_ADDRESS!, EmailServiceABI.abi, this.signer);
+    const tx = await contract.claimReferralReward();
+    await tx.wait();
+  }
+
+  async getMailboxDetails(mailboxId: string): Promise<any> {
+    if (!this.provider) {
+      throw new Error('Provider not initialized');
+    }
+
+    const contract = new Contract(CONTRACT_ADDRESS!, EmailServiceABI.abi, this.provider);
+    const mailbox = await contract.getMailbox(mailboxId);
+
+    return {
+      owner: mailbox.owner,
+      mailboxId: mailbox.mailboxId,
+      createdAt: Number(mailbox.createdAt),
+      expiresAt: Number(mailbox.expiresAt),
+      duration: Number(mailbox.duration),
+      paymentMethod: mailbox.paymentMethod === 0 ? 'MON' : 'USDC',
+      active: mailbox.active
+    };
+  }
+
   isConnected(): boolean {
     return this.signer !== null;
   }

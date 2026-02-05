@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Premium Purple - Agent's Toolbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-deep-purple {
+            background: linear-gradient(135deg, #0a0118 0%, #1a0d2e 40%, #28184d 70%, #3d2463 100%);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        glass: {
+                            purple: {
+                                300: '#523178',
+                                400: '#6b3fa0',
+                                500: '#7c4dbd',
+                                600: '#8b5fd9',
+                                700: '#9d73e8',
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-deep-purple min-h-screen p-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-white mb-2">深沉高级紫 - Deep Premium Purple</h1>
+            <p class="text-white/60">更暗调、更优雅、更高级的紫色方案</p>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">配色方案</h2>
+
+            <div class="space-y-6">
+                <!-- Background Gradient -->
+                <div>
+                    <h3 class="text-white/80 mb-3 font-semibold">背景渐变</h3>
+                    <div class="h-24 rounded-2xl bg-deep-purple border border-white/10 flex items-center justify-center">
+                        <span class="text-white/60 text-sm font-mono">深紫黑 → 深紫 → 暗紫 → 中紫</span>
+                    </div>
+                </div>
+
+                <!-- Purple Shades -->
+                <div>
+                    <h3 class="text-white/80 mb-3 font-semibold">紫色色阶</h3>
+                    <div class="grid grid-cols-5 gap-3">
+                        <div class="space-y-2">
+                            <div class="h-16 rounded-xl" style="background: #523178;"></div>
+                            <p class="text-xs text-white/50 text-center">300</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-16 rounded-xl" style="background: #6b3fa0;"></div>
+                            <p class="text-xs text-white/50 text-center">400</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-16 rounded-xl" style="background: #7c4dbd;"></div>
+                            <p class="text-xs text-white/50 text-center">500</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-16 rounded-xl" style="background: #8b5fd9;"></div>
+                            <p class="text-xs text-white/50 text-center">600</p>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-16 rounded-xl" style="background: #9d73e8;"></div>
+                            <p class="text-xs text-white/50 text-center">700</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component Examples -->
+        <div class="grid md:grid-cols-2 gap-6">
+
+            <!-- Card Example -->
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gradient-to-br from-[#7c4dbd]/20 to-[#8b5fd9]/20 backdrop-blur-sm p-3 rounded-xl border border-[#6b3fa0]/30">
+                        <svg class="w-6 h-6" style="color: #9d73e8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold">玻璃态卡片</h3>
+                        <p class="text-white/60 text-sm">半透明模糊效果</p>
+                    </div>
+                </div>
+                <p class="text-white/50 text-sm">这个深沉的紫色更有高级感，不会显得廉价或过于鲜艳。</p>
+            </div>
+
+            <!-- Button Example -->
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 class="text-white font-bold mb-4">按钮示例</h3>
+
+                <div class="space-y-3">
+                    <!-- Primary Button -->
+                    <button class="w-full bg-gradient-to-r from-[#7c4dbd] via-[#8b5fd9] to-[#9d73e8] hover:from-[#6b3fa0] hover:via-[#7c4dbd] hover:to-[#8b5fd9] text-white font-semibold py-3 rounded-xl transition-all duration-200 border border-[#6b3fa0]/30">
+                        深沉紫色渐变按钮
+                    </button>
+
+                    <!-- Secondary Button -->
+                    <button class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold py-3 rounded-xl transition-all duration-200">
+                        次要按钮
+                    </button>
+                </div>
+            </div>
+
+            <!-- Badge Examples -->
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 class="text-white font-bold mb-4">状态徽章</h3>
+
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 bg-[#7c4dbd]/20 border border-[#8b5fd9]/30 text-[#9d73e8] rounded-full text-sm font-medium">
+                        活跃
+                    </span>
+                    <span class="px-3 py-1 bg-[#20ba88]/20 border border-[#2dd4a0]/30 text-[#4de0b4] rounded-full text-sm font-medium">
+                        成功
+                    </span>
+                    <span class="px-3 py-1 bg-orange-500/20 border border-orange-400/30 text-orange-300 rounded-full text-sm font-medium">
+                        警告
+                    </span>
+                </div>
+            </div>
+
+            <!-- Input Example -->
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 class="text-white font-bold mb-4">输入框</h3>
+
+                <input
+                    type="text"
+                    placeholder="输入内容..."
+                    class="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/10 focus:border-[#7c4dbd]/50 transition-all"
+                />
+            </div>
+
+        </div>
+
+        <!-- Comparison -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+            <h2 class="text-2xl font-bold text-white mb-6 text-center">设计理念对比</h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-red-400 font-bold mb-3">❌ 之前（廉价紫）</h3>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li>• 过于鲜艳的亮紫色</li>
+                        <li>• 看起来像玩具或游戏</li>
+                        <li>• 缺乏专业感</li>
+                        <li>• 廉价的视觉效果</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-green-400 font-bold mb-3">✅ 现在（深沉紫）</h3>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li>• 深沉优雅的暗紫色</li>
+                        <li>• 高级奢华的视觉感受</li>
+                        <li>• 专业企业级外观</li>
+                        <li>• 符合 Web3 黑客松品味</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Values -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">颜色代码</h2>
+
+            <div class="grid md:grid-cols-2 gap-4 text-sm font-mono">
+                <div class="bg-black/20 rounded-xl p-4 border border-white/5">
+                    <p class="text-white/50 mb-2">背景渐变起点</p>
+                    <p class="text-white">#0a0118</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-4 border border-white/5">
+                    <p class="text-white/50 mb-2">背景渐变中点</p>
+                    <p class="text-white">#1a0d2e → #28184d</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-4 border border-white/5">
+                    <p class="text-white/50 mb-2">主紫色 (500)</p>
+                    <p class="text-white">#7c4dbd</p>
+                </div>
+                <div class="bg-black/20 rounded-xl p-4 border border-white/5">
+                    <p class="text-white/50 mb-2">亮紫色 (700)</p>
+                    <p class="text-white">#9d73e8</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-white/40 text-sm py-8">
+            <p>深沉高级紫 - 为 Monad Hackathon 2026 打造</p>
+            <p class="mt-2">Built with 💜 by 姐姐 @piggyxbot</p>
+        </div>
+
+    </div>
+</body>
+</html>

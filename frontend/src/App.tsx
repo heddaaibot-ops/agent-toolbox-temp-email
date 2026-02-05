@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { WalletConnect } from './components/WalletConnect';
 import { PurchaseMailbox } from './components/PurchaseMailbox';
 import { MailboxDashboard } from './components/MailboxDashboard';
+import { ReferralSection } from './components/ReferralSection';
 import { apiService } from './services/api';
 import { web3Service } from './services/web3';
 import { Mail, Sparkles } from 'lucide-react';
 
-type View = 'purchase' | 'dashboard';
+type View = 'purchase' | 'dashboard' | 'referral';
 
 function App() {
   const [connectedAddress, setConnectedAddress] = useState<string>('');
@@ -66,14 +67,18 @@ function App() {
     setView('purchase');
   };
 
+  const handleViewReferral = () => {
+    setView('referral');
+  };
+
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 bg-glass-mesh">
       {/* Header */}
       <header className="max-w-6xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white p-3 rounded-xl shadow-lg">
-              <Mail className="text-sky-600" size={32} />
+            <div className="bg-white/10 backdrop-blur-xl p-3 rounded-xl shadow-glass border border-white/20">
+              <Mail className="text-glass-purple-400" size={32} />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white flex items-center gap-2">
@@ -97,46 +102,48 @@ function App() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto">
         {!connectedAddress ? (
-          <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto text-center py-12">
-            <Mail className="mx-auto text-sky-600 mb-6" size={64} />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="bg-white/5 backdrop-blur-xl rounded-3xl shadow-glass-lg border border-white/10 p-6 max-w-2xl mx-auto text-center py-12">
+            <div className="bg-gradient-to-br from-glass-purple-500/20 to-glass-emerald-500/20 backdrop-blur-sm w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center border border-white/20">
+              <Mail className="text-glass-purple-300" size={48} />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4">
               Welcome to Agent's Toolbox
             </h2>
-            <p className="text-gray-600 mb-8 text-lg">
+            <p className="text-white/70 mb-8 text-lg">
               Purchase temporary email addresses on the Monad blockchain.
               <br />
               Fast, secure, and decentralized.
             </p>
             <div className="space-y-4 text-left max-w-md mx-auto">
               <div className="flex items-start gap-3">
-                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-gradient-to-br from-glass-purple-500 to-glass-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold shadow-glass">
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Connect Wallet</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-white">Connect Wallet</h3>
+                  <p className="text-sm text-white/60">
                     Connect your MetaMask wallet to get started
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-gradient-to-br from-glass-purple-500 to-glass-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold shadow-glass">
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Purchase Mailbox</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-white">Purchase Mailbox</h3>
+                  <p className="text-sm text-white/60">
                     Choose duration and pay with USDC or MON
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-sky-100 text-sky-600 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">
+                <div className="bg-gradient-to-br from-glass-purple-500 to-glass-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold shadow-glass">
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Receive Emails</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-white">Receive Emails</h3>
+                  <p className="text-sm text-white/60">
                     Use your temporary email and view messages in real-time
                   </p>
                 </div>
@@ -145,22 +152,58 @@ function App() {
           </div>
         ) : (
           <>
-            {/* My Mailboxes */}
+            {/* Navigation Tabs - Glassmorphism */}
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-glass border border-white/10 p-2 mb-6 flex gap-2">
+              <button
+                onClick={() => setView('purchase')}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                  view === 'purchase'
+                    ? 'bg-gradient-to-r from-glass-purple-500 to-glass-purple-600 text-white shadow-glass border border-glass-purple-400/30'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white border border-transparent'
+                }`}
+              >
+                📬 购买邮箱
+              </button>
+              <button
+                onClick={handleViewReferral}
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                  view === 'referral'
+                    ? 'bg-gradient-to-r from-glass-emerald-500 to-glass-emerald-600 text-white shadow-glass-emerald border border-glass-emerald-400/30'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white border border-transparent'
+                }`}
+              >
+                🎁 推荐奖励
+              </button>
+              {currentMailboxId && (
+                <button
+                  onClick={() => setView('dashboard')}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                    view === 'dashboard'
+                      ? 'bg-gradient-to-r from-glass-purple-400 via-glass-purple-500 to-glass-purple-600 text-white shadow-glass-lg border border-glass-purple-300/30'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white border border-transparent'
+                  }`}
+                >
+                  📧 我的邮箱
+                </button>
+              )}
+            </div>
+
+            {/* My Mailboxes - Glassmorphism */}
             {myMailboxes.length > 0 && view === 'purchase' && (
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">My Mailboxes</h3>
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-glass border border-white/10 p-6 mb-6">
+                <h3 className="text-xl font-bold text-white mb-4">My Mailboxes</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {myMailboxes.map((mailboxId) => (
                     <button
                       key={mailboxId}
                       onClick={() => handleViewMailbox(mailboxId)}
-                      className="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-sky-500 hover:bg-sky-50 transition-all"
+                      className="text-left p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl hover:bg-white/10 hover:border-glass-purple-400/50 hover:shadow-glass transition-all duration-200"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Mail size={16} className="text-sky-600" />
-                        <span className="font-semibold text-gray-900">Mailbox</span>
+                        <Mail size={16} className="text-glass-purple-400" />
+                        <span className="font-semibold text-white">Mailbox</span>
                       </div>
-                      <div className="text-xs text-gray-600 font-mono truncate">
+                      <div className="text-xs text-white/60 font-mono truncate">
                         {mailboxId}
                       </div>
                     </button>
@@ -172,6 +215,8 @@ function App() {
             {/* View */}
             {view === 'purchase' ? (
               <PurchaseMailbox onPurchaseSuccess={handlePurchaseSuccess} />
+            ) : view === 'referral' ? (
+              <ReferralSection userAddress={connectedAddress} />
             ) : (
               <MailboxDashboard mailboxId={currentMailboxId} onBack={handleBackToPurchase} />
             )}

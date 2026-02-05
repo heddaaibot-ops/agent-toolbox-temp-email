@@ -44,21 +44,21 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto">
+    <div className="bg-white/5 backdrop-blur-xl rounded-3xl shadow-glass-lg border border-white/10 p-6 max-w-md mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <div className="bg-sky-100 p-3 rounded-lg">
-          <Mail className="text-sky-600" size={24} />
+        <div className="bg-gradient-to-br from-glass-purple-500/20 to-glass-purple-600/20 backdrop-blur-sm p-3 rounded-xl border border-white/20">
+          <Mail className="text-glass-purple-300" size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Purchase Mailbox</h2>
-          <p className="text-gray-600">Get your temporary email address</p>
+          <h2 className="text-2xl font-bold text-white">Purchase Mailbox</h2>
+          <p className="text-white/60">Get your temporary email address</p>
         </div>
       </div>
 
       <div className="space-y-6">
         {/* Duration Selection */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-white mb-2">
             <Clock className="inline mr-2" size={16} />
             Duration (hours)
           </label>
@@ -68,63 +68,63 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
             max="24"
             value={duration}
             onChange={(e) => setDuration(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-glass-purple-500"
           />
-          <div className="flex justify-between text-sm text-gray-600 mt-2">
+          <div className="flex justify-between text-sm text-white/60 mt-2">
             <span>1 hour</span>
-            <span className="font-semibold text-sky-600">{duration} hours</span>
+            <span className="font-semibold text-glass-purple-300">{duration} hours</span>
             <span>24 hours</span>
           </div>
         </div>
 
         {/* Payment Token Selection */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-white mb-2">
             <DollarSign className="inline mr-2" size={16} />
             Payment Method
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setPaymentToken('MON')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-4 rounded-xl border backdrop-blur-sm transition-all duration-200 ${
                 paymentToken === 'MON'
-                  ? 'border-sky-600 bg-sky-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-glass-purple-400 bg-glass-purple-500/20 shadow-glass'
+                  : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
               }`}
             >
-              <div className="font-semibold text-gray-900">MON</div>
-              <div className="text-xs text-gray-600">Native Token</div>
+              <div className="font-semibold text-white">MON</div>
+              <div className="text-xs text-white/60">Native Token</div>
             </button>
             <button
               onClick={() => setPaymentToken('USDC')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-4 rounded-xl border backdrop-blur-sm transition-all duration-200 ${
                 paymentToken === 'USDC'
-                  ? 'border-sky-600 bg-sky-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-glass-purple-400 bg-glass-purple-500/20 shadow-glass'
+                  : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
               }`}
             >
-              <div className="font-semibold text-gray-900">USDC</div>
-              <div className="text-xs text-gray-600">Stablecoin</div>
+              <div className="font-semibold text-white">USDC</div>
+              <div className="text-xs text-white/60">Stablecoin</div>
             </button>
           </div>
         </div>
 
         {/* Price Display */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gradient-to-br from-glass-emerald-500/10 to-glass-purple-500/10 backdrop-blur-sm border border-white/20 p-4 rounded-xl">
           <div className="flex justify-between items-center">
-            <span className="text-gray-700">Total Price:</span>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-white/80">Total Price:</span>
+            <span className="text-2xl font-bold text-white">
               {calculatePrice()} {paymentToken}
             </span>
           </div>
-          <div className="text-xs text-gray-600 mt-2">
+          <div className="text-xs text-white/50 mt-2">
             {paymentToken === 'USDC' ? '$0.10' : '0.001 MON'} per hour
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-500/10 backdrop-blur-sm border border-red-400/30 text-red-300 px-4 py-3 rounded-xl">
             {error}
           </div>
         )}
@@ -133,7 +133,7 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
         <button
           onClick={handlePurchase}
           disabled={isPurchasing}
-          className="w-full btn-primary py-4 text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-glass-purple-500 via-glass-purple-600 to-glass-purple-700 hover:from-glass-purple-400 hover:via-glass-purple-500 hover:to-glass-purple-600 text-white font-semibold py-4 text-lg rounded-2xl shadow-glass-lg hover:shadow-glass transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed border border-glass-purple-400/30"
         >
           {isPurchasing ? (
             <>
@@ -148,7 +148,7 @@ export function PurchaseMailbox({ onPurchaseSuccess }: PurchaseMailboxProps) {
           )}
         </button>
 
-        <p className="text-xs text-gray-600 text-center">
+        <p className="text-xs text-white/50 text-center">
           Your temporary email will be created on the blockchain and accessible immediately after purchase.
         </p>
       </div>
