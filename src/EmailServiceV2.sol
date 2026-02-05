@@ -61,9 +61,9 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
     /// @notice 郵箱結構（優化 storage 布局以節省 Gas）
     struct Mailbox {
         address owner;          // 20 bytes
-        uint96 createdAt;      // 12 bytes - 使用 uint96 足夠（可以支持到 2^96 秒後）
+        uint96 createdAt;      // 12 bytes
         uint96 expiresAt;      // 12 bytes
-        uint24 duration;       // 3 bytes - 最大 16777215 小時
+        uint24 duration;       // 3 bytes
         uint8 paymentMethod;   // 1 byte - 0: MON, 1: USDC
         bool active;           // 1 byte
         string mailboxId;      // 動態大小
@@ -77,9 +77,6 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
 
     // ============ 事件 ============
 
-    /**
-     * @notice 郵箱購買成功事件
-     */
     event EmailPurchased(
         address indexed buyer,
         string mailboxId,
@@ -89,9 +86,6 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
         address indexed referrer
     );
 
-    /**
-     * @notice 郵箱續費成功事件
-     */
     event MailboxRenewed(
         string indexed mailboxId,
         address indexed owner,
@@ -101,9 +95,6 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
         uint256 pricePaid
     );
 
-    /**
-     * @notice 推薦獎勵事件
-     */
     event ReferralReward(
         address indexed referrer,
         address indexed referee,
@@ -111,9 +102,6 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
         uint256 rewardAmount
     );
 
-    /**
-     * @notice 批量購買事件
-     */
     event BulkPurchase(
         address indexed buyer,
         uint256 quantity,
@@ -122,19 +110,10 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
         string paymentMethod
     );
 
-    /**
-     * @notice 價格更新事件
-     */
     event PriceUpdated(uint256 pricePerHourUSDC, uint256 pricePerHourMON);
 
-    /**
-     * @notice 提款事件
-     */
     event Withdrawal(address indexed token, uint256 amount, address indexed to);
 
-    /**
-     * @notice 推薦獎勵領取事件
-     */
     event ReferralRewardClaimed(address indexed referrer, uint256 amount);
 
     // ============ 錯誤定義 ============
@@ -167,60 +146,25 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @notice 購買臨時郵箱（支持推薦）
-     * @param duration 郵箱持續時間（1-24 小時）
-     * @param paymentToken 支付代幣地址（address(0) = MON）
-     * @param referrer 推薦人地址（address(0) = 無推薦）
-     * @return mailboxId 生成的唯一郵箱 ID
      */
     function purchaseMailbox(
         uint256 duration,
         address paymentToken,
         address referrer
     ) external payable whenNotPaused nonReentrant returns (string memory mailboxId) {
-        // 驗證持續時間
-        if (duration < 1 || duration > MAX_DURATION) {
-            revert InvalidDuration();
-        }
-
-        // 驗證推薦人（不能是自己）
-        if (referrer != address(0) && referrer == msg.sender) {
-            revert InvalidReferrer();
-        }
+        // 驗證
+        if (duration < 1 || duration > MAX_DURATION) revert InvalidDuration();
+        if (referrer != address(0) && referrer == msg.sender) revert InvalidReferrer();
 
         // 處理支付
-        (string memory paymentMethod, uint256 totalPrice) = _processPayment(
-            duration,
-            paymentToken
-        );
+        (string memory paymentMethod, uint256 totalPrice) = _processPayment(duration, paymentToken);
 
-        // 生成唯一 mailboxId
-        _mailboxCounter++;
-        mailboxId = _generateMailboxId(msg.sender, _mailboxCounter);
-
-        // 計算過期時間
-        uint256 createdAt = block.timestamp;
-        uint256 expiresAt = createdAt + (duration * 1 hours);
-
-        // 創建郵箱記錄（優化 storage）
-        mailboxes[mailboxId] = Mailbox({
-            owner: msg.sender,
-            createdAt: uint96(createdAt),
-            expiresAt: uint96(expiresAt),
-            duration: uint24(duration),
-            paymentMethod: paymentToken == address(0) ? 0 : 1,
-            active: true,
-            mailboxId: mailboxId
-        });
-
-        // 添加到用戶郵箱列表
-        ownerMailboxes[msg.sender].push(mailboxId);
+        // 創建郵箱
+        mailboxId = _createMailbox(duration, paymentToken);
 
         // 處理推薦獎勵
         if (referrer != address(0)) {
-            uint256 reward = (totalPrice * REFERRAL_REWARD_RATE) / BASIS_POINTS;
-            referralRewards[referrer] += reward;
-
-            emit ReferralReward(referrer, msg.sender, mailboxId, reward);
+            _handleReferralReward(referrer, totalPrice, mailboxId);
         }
 
         // 發出購買事件
@@ -228,7 +172,7 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
             msg.sender,
             mailboxId,
             "",
-            expiresAt,
+            uint256(mailboxes[mailboxId].expiresAt),
             paymentMethod,
             referrer
         );
@@ -238,87 +182,205 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @notice 續費郵箱
-     * @param mailboxId 郵箱 ID
-     * @param additionalHours 增加的小時數（1-24）
-     * @param paymentToken 支付代幣地址
      */
     function renewMailbox(
         string memory mailboxId,
         uint256 additionalHours,
         address paymentToken
     ) external payable whenNotPaused nonReentrant {
-        // 檢查郵箱存在
         Mailbox storage mailbox = mailboxes[mailboxId];
-        if (mailbox.owner == address(0)) {
-            revert MailboxNotFound();
-        }
 
-        // 檢查權限
-        if (mailbox.owner != msg.sender) {
-            revert NotMailboxOwner();
-        }
-
-        // 驗證時長
-        if (additionalHours < 1 || additionalHours > MAX_DURATION) {
-            revert InvalidDuration();
-        }
+        // 驗證
+        if (mailbox.owner == address(0)) revert MailboxNotFound();
+        if (mailbox.owner != msg.sender) revert NotMailboxOwner();
+        if (additionalHours < 1 || additionalHours > MAX_DURATION) revert InvalidDuration();
 
         // 處理支付
-        (string memory paymentMethod, uint256 pricePaid) = _processPayment(
-            additionalHours,
-            paymentToken
-        );
+        (string memory paymentMethod, uint256 pricePaid) = _processPayment(additionalHours, paymentToken);
 
         // 更新過期時間
-        uint256 newExpiresAt = mailbox.expiresAt + (additionalHours * 1 hours);
+        uint256 newExpiresAt = uint256(mailbox.expiresAt) + (additionalHours * 1 hours);
         mailbox.expiresAt = uint96(newExpiresAt);
         mailbox.duration = uint24(uint256(mailbox.duration) + additionalHours);
 
-        // 如果過期了，重新激活
-        if (!mailbox.active) {
-            mailbox.active = true;
-        }
+        if (!mailbox.active) mailbox.active = true;
 
-        emit MailboxRenewed(
-            mailboxId,
-            msg.sender,
-            newExpiresAt,
-            additionalHours,
-            paymentMethod,
-            pricePaid
-        );
+        emit MailboxRenewed(mailboxId, msg.sender, newExpiresAt, additionalHours, paymentMethod, pricePaid);
     }
 
     /**
      * @notice 批量購買郵箱（5個以上享受折扣）
-     * @param durations 每個郵箱的持續時間數組
-     * @param paymentToken 支付代幣地址
-     * @param referrer 推薦人地址
-     * @return mailboxIds 生成的郵箱 ID 數組
      */
     function bulkPurchaseMailboxes(
         uint256[] calldata durations,
         address paymentToken,
         address referrer
-    ) external payable whenNotPaused nonReentrant returns (string[] memory mailboxIds) {
+    ) external payable whenNotPaused nonReentrant returns (string[] memory) {
         uint256 quantity = durations.length;
 
-        // 驗證數量
-        if (quantity == 0) {
-            revert InvalidQuantity();
+        // 驗證
+        if (quantity == 0) revert InvalidQuantity();
+        if (referrer != address(0) && referrer == msg.sender) revert InvalidReferrer();
+
+        // 計算價格
+        (uint256 totalPrice, uint256 discountAmount) = _calculateBulkPrice(durations, paymentToken);
+
+        // 處理支付
+        string memory paymentMethod = _processBulkPayment(totalPrice, paymentToken);
+
+        // 創建郵箱
+        string[] memory mailboxIds = _createBulkMailboxes(durations, paymentToken, paymentMethod, referrer);
+
+        // 處理推薦獎勵
+        if (referrer != address(0)) {
+            _handleReferralReward(referrer, totalPrice, mailboxIds[0]);
         }
 
-        // 驗證推薦人
-        if (referrer != address(0) && referrer == msg.sender) {
-            revert InvalidReferrer();
-        }
+        emit BulkPurchase(msg.sender, quantity, totalPrice, discountAmount, paymentMethod);
 
-        // 計算總價和折扣
-        uint256 totalHours = 0;
-        for (uint256 i = 0; i < quantity; i++) {
-            if (durations[i] < 1 || durations[i] > MAX_DURATION) {
-                revert InvalidDuration();
+        return mailboxIds;
+    }
+
+    /**
+     * @notice 領取推薦獎勵
+     */
+    function claimReferralReward() external nonReentrant {
+        uint256 reward = referralRewards[msg.sender];
+        if (reward == 0) revert NoReferralReward();
+
+        referralRewards[msg.sender] = 0;
+
+        (bool success, ) = msg.sender.call{value: reward}("");
+        require(success, "Reward transfer failed");
+
+        emit ReferralRewardClaimed(msg.sender, reward);
+    }
+
+    // ============ 查詢函數 ============
+
+    function getMyMailboxes() external view returns (Mailbox[] memory) {
+        string[] memory ids = ownerMailboxes[msg.sender];
+        Mailbox[] memory result = new Mailbox[](ids.length);
+        for (uint256 i = 0; i < ids.length; i++) {
+            result[i] = mailboxes[ids[i]];
+        }
+        return result;
+    }
+
+    function getMailbox(string memory mailboxId) external view returns (Mailbox memory) {
+        Mailbox memory mailbox = mailboxes[mailboxId];
+        if (mailbox.owner == address(0)) revert MailboxNotFound();
+        return mailbox;
+    }
+
+    function isMailboxActive(string memory mailboxId) external view returns (bool) {
+        Mailbox memory mailbox = mailboxes[mailboxId];
+        if (mailbox.owner == address(0)) return false;
+        return mailbox.active && block.timestamp < mailbox.expiresAt;
+    }
+
+    function getBuyerMailboxes(address buyer) external view returns (string[] memory) {
+        return ownerMailboxes[buyer];
+    }
+
+    function getMailboxPrice(uint256 duration) public view returns (uint256) {
+        return pricePerHourUSDC * duration;
+    }
+
+    // ============ 管理員函數 ============
+
+    function updatePrice(uint256 _pricePerHourUSDC, uint256 _pricePerHourMON) external onlyOwner {
+        pricePerHourUSDC = _pricePerHourUSDC;
+        pricePerHourMON = _pricePerHourMON;
+        emit PriceUpdated(_pricePerHourUSDC, _pricePerHourMON);
+    }
+
+    function withdrawUSDC(address to) external onlyOwner {
+        uint256 balance = usdc.balanceOf(address(this));
+        if (balance == 0) revert NoBalanceToWithdraw();
+        bool success = usdc.transfer(to, balance);
+        require(success, "USDC transfer failed");
+        emit Withdrawal(address(usdc), balance, to);
+    }
+
+    function withdrawMON(address to) external onlyOwner {
+        uint256 balance = address(this).balance;
+        if (balance == 0) revert NoBalanceToWithdraw();
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "MON transfer failed");
+        emit Withdrawal(address(0), balance, to);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    // ============ 內部函數 ============
+
+    function _processPayment(
+        uint256 duration,
+        address paymentToken
+    ) private returns (string memory paymentMethod, uint256 totalPrice) {
+        if (paymentToken == address(0)) {
+            totalPrice = pricePerHourMON * duration;
+            if (msg.value < totalPrice) revert InsufficientMON();
+            if (msg.value > totalPrice) {
+                (bool success, ) = msg.sender.call{value: msg.value - totalPrice}("");
+                require(success, "Refund failed");
             }
+            paymentMethod = "MON";
+        } else {
+            totalPrice = pricePerHourUSDC * duration;
+            bool success = usdc.transferFrom(msg.sender, address(this), totalPrice);
+            if (!success) revert USDCTransferFailed();
+            paymentMethod = "USDC";
+        }
+    }
+
+    function _createMailbox(
+        uint256 duration,
+        address paymentToken
+    ) private returns (string memory mailboxId) {
+        _mailboxCounter++;
+        mailboxId = _generateMailboxId(msg.sender, _mailboxCounter);
+
+        uint256 currentTime = block.timestamp;
+        uint256 expiresAt = currentTime + (duration * 1 hours);
+
+        mailboxes[mailboxId] = Mailbox({
+            owner: msg.sender,
+            createdAt: uint96(currentTime),
+            expiresAt: uint96(expiresAt),
+            duration: uint24(duration),
+            paymentMethod: paymentToken == address(0) ? 0 : 1,
+            active: true,
+            mailboxId: mailboxId
+        });
+
+        ownerMailboxes[msg.sender].push(mailboxId);
+    }
+
+    function _handleReferralReward(
+        address referrer,
+        uint256 totalPrice,
+        string memory mailboxId
+    ) private {
+        uint256 reward = (totalPrice * REFERRAL_REWARD_RATE) / BASIS_POINTS;
+        referralRewards[referrer] += reward;
+        emit ReferralReward(referrer, msg.sender, mailboxId, reward);
+    }
+
+    function _calculateBulkPrice(
+        uint256[] calldata durations,
+        address paymentToken
+    ) private view returns (uint256 totalPrice, uint256 discountAmount) {
+        uint256 totalHours = 0;
+        for (uint256 i = 0; i < durations.length; i++) {
+            if (durations[i] < 1 || durations[i] > MAX_DURATION) revert InvalidDuration();
             totalHours += durations[i];
         }
 
@@ -326,26 +388,43 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
             ? pricePerHourMON * totalHours
             : pricePerHourUSDC * totalHours;
 
-        uint256 totalPrice = basePrice;
-        uint256 discountAmount = 0;
-
-        // 應用批量折扣
-        if (quantity >= BULK_DISCOUNT_THRESHOLD) {
+        if (durations.length >= BULK_DISCOUNT_THRESHOLD) {
             discountAmount = (basePrice * BULK_DISCOUNT_RATE) / BASIS_POINTS;
             totalPrice = basePrice - discountAmount;
+        } else {
+            totalPrice = basePrice;
+            discountAmount = 0;
         }
+    }
 
-        // 處理支付
-        string memory paymentMethod = _processPaymentAmount(
-            totalPrice,
-            paymentToken
-        );
+    function _processBulkPayment(
+        uint256 amount,
+        address paymentToken
+    ) private returns (string memory paymentMethod) {
+        if (paymentToken == address(0)) {
+            if (msg.value < amount) revert InsufficientMON();
+            if (msg.value > amount) {
+                (bool success, ) = msg.sender.call{value: msg.value - amount}("");
+                require(success, "Refund failed");
+            }
+            paymentMethod = "MON";
+        } else {
+            bool success = usdc.transferFrom(msg.sender, address(this), amount);
+            if (!success) revert USDCTransferFailed();
+            paymentMethod = "USDC";
+        }
+    }
 
-        // 創建郵箱
-        mailboxIds = new string[](quantity);
+    function _createBulkMailboxes(
+        uint256[] calldata durations,
+        address paymentToken,
+        string memory paymentMethod,
+        address referrer
+    ) private returns (string[] memory mailboxIds) {
+        mailboxIds = new string[](durations.length);
         uint256 currentTime = block.timestamp;
 
-        for (uint256 i = 0; i < quantity; i++) {
+        for (uint256 i = 0; i < durations.length; i++) {
             _mailboxCounter++;
             string memory mailboxId = _generateMailboxId(msg.sender, _mailboxCounter);
             mailboxIds[i] = mailboxId;
@@ -364,204 +443,8 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
 
             ownerMailboxes[msg.sender].push(mailboxId);
 
-            emit EmailPurchased(
-                msg.sender,
-                mailboxId,
-                "",
-                expiresAt,
-                paymentMethod,
-                referrer
-            );
+            emit EmailPurchased(msg.sender, mailboxId, "", expiresAt, paymentMethod, referrer);
         }
-
-        // 處理推薦獎勵
-        if (referrer != address(0)) {
-            uint256 reward = (totalPrice * REFERRAL_REWARD_RATE) / BASIS_POINTS;
-            referralRewards[referrer] += reward;
-
-            emit ReferralReward(referrer, msg.sender, mailboxIds[0], reward);
-        }
-
-        emit BulkPurchase(
-            msg.sender,
-            quantity,
-            totalPrice,
-            discountAmount,
-            paymentMethod
-        );
-
-        return mailboxIds;
-    }
-
-    /**
-     * @notice 領取推薦獎勵
-     */
-    function claimReferralReward() external nonReentrant {
-        uint256 reward = referralRewards[msg.sender];
-
-        if (reward == 0) {
-            revert NoReferralReward();
-        }
-
-        // 重置獎勵（防止重入）
-        referralRewards[msg.sender] = 0;
-
-        // 轉賬獎勵（MON）
-        (bool success, ) = msg.sender.call{value: reward}("");
-        require(success, "Reward transfer failed");
-
-        emit ReferralRewardClaimed(msg.sender, reward);
-    }
-
-    // ============ 查詢函數 ============
-
-    function getMyMailboxes() external view returns (Mailbox[] memory) {
-        string[] memory ids = ownerMailboxes[msg.sender];
-        Mailbox[] memory result = new Mailbox[](ids.length);
-
-        for (uint256 i = 0; i < ids.length; i++) {
-            result[i] = mailboxes[ids[i]];
-        }
-
-        return result;
-    }
-
-    function getMailbox(string memory mailboxId) external view returns (Mailbox memory) {
-        Mailbox memory mailbox = mailboxes[mailboxId];
-        if (mailbox.owner == address(0)) {
-            revert MailboxNotFound();
-        }
-        return mailbox;
-    }
-
-    function isMailboxActive(string memory mailboxId) external view returns (bool) {
-        Mailbox memory mailbox = mailboxes[mailboxId];
-        if (mailbox.owner == address(0)) {
-            return false;
-        }
-        return mailbox.active && block.timestamp < mailbox.expiresAt;
-    }
-
-    function getBuyerMailboxes(address buyer) external view returns (string[] memory) {
-        return ownerMailboxes[buyer];
-    }
-
-    function getMailboxPrice(uint256 duration) public view returns (uint256) {
-        return pricePerHourUSDC * duration;
-    }
-
-    // ============ 管理員函數 ============
-
-    function updatePrice(
-        uint256 _pricePerHourUSDC,
-        uint256 _pricePerHourMON
-    ) external onlyOwner {
-        pricePerHourUSDC = _pricePerHourUSDC;
-        pricePerHourMON = _pricePerHourMON;
-
-        emit PriceUpdated(_pricePerHourUSDC, _pricePerHourMON);
-    }
-
-    function withdrawUSDC(address to) external onlyOwner {
-        uint256 balance = usdc.balanceOf(address(this));
-        if (balance == 0) {
-            revert NoBalanceToWithdraw();
-        }
-
-        bool success = usdc.transfer(to, balance);
-        require(success, "USDC transfer failed");
-
-        emit Withdrawal(address(usdc), balance, to);
-    }
-
-    function withdrawMON(address to) external onlyOwner {
-        uint256 balance = address(this).balance;
-        if (balance == 0) {
-            revert NoBalanceToWithdraw();
-        }
-
-        (bool success, ) = to.call{value: balance}("");
-        require(success, "MON transfer failed");
-
-        emit Withdrawal(address(0), balance, to);
-    }
-
-    /**
-     * @notice 緊急暫停（安全開關）
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @notice 取消暫停
-     */
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-
-    // ============ 內部函數 ============
-
-    function _processPayment(
-        uint256 duration,
-        address paymentToken
-    ) private returns (string memory paymentMethod, uint256 totalPrice) {
-        if (paymentToken == address(0)) {
-            // MON 支付
-            totalPrice = pricePerHourMON * duration;
-            if (msg.value < totalPrice) {
-                revert InsufficientMON();
-            }
-
-            // 退還多餘的
-            if (msg.value > totalPrice) {
-                (bool success, ) = msg.sender.call{value: msg.value - totalPrice}("");
-                require(success, "Refund failed");
-            }
-
-            paymentMethod = "MON";
-        } else {
-            // USDC 支付
-            totalPrice = pricePerHourUSDC * duration;
-            bool success = usdc.transferFrom(msg.sender, address(this), totalPrice);
-            if (!success) {
-                revert USDCTransferFailed();
-            }
-
-            paymentMethod = "USDC";
-        }
-
-        return (paymentMethod, totalPrice);
-    }
-
-    function _processPaymentAmount(
-        uint256 amount,
-        address paymentToken
-    ) private returns (string memory paymentMethod) {
-        if (paymentToken == address(0)) {
-            // MON 支付
-            if (msg.value < amount) {
-                revert InsufficientMON();
-            }
-
-            // 退還多餘的
-            if (msg.value > amount) {
-                (bool success, ) = msg.sender.call{value: msg.value - amount}("");
-                require(success, "Refund failed");
-            }
-
-            paymentMethod = "MON";
-        } else {
-            // USDC 支付
-            bool success = usdc.transferFrom(msg.sender, address(this), amount);
-            if (!success) {
-                revert USDCTransferFailed();
-            }
-
-            paymentMethod = "USDC";
-        }
-
-        return paymentMethod;
     }
 
     function _generateMailboxId(
@@ -569,14 +452,8 @@ contract EmailServiceV2 is Ownable, ReentrancyGuard, Pausable {
         uint256 counter
     ) private view returns (string memory) {
         bytes32 hash = keccak256(
-            abi.encodePacked(
-                buyer,
-                counter,
-                block.timestamp,
-                block.prevrandao
-            )
+            abi.encodePacked(buyer, counter, block.timestamp, block.prevrandao)
         );
-
         return _bytes32ToHexString(hash);
     }
 
